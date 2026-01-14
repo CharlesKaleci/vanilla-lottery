@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tombala Ekranı - İnovel</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .animate-in { animation: animateIn 0.5s ease-out forwards; opacity: 0; }
+        @keyframes animateIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        
+        .tombola-cell { padding: 4px; display: flex; align-items: center; justify-content: center; font-weight: bold; border-radius: 0.375rem; font-size: 1rem; background-color: rgba(255,255,255,0.05); color: #64748b; transition: all 0.3s; height: 36px; }
+        .tombola-cell.active { background-color: #22c55e; color: white; box-shadow: 0 0 10px rgba(34, 197, 94, 0.4); transform: scale(1.05); z-index: 10; }
+        .tombola-cell.last { background-color: #eab308; color: black; transform: scale(1.15); z-index: 20; box-shadow: 0 0 15px rgba(234, 179, 8, 0.6); }
+    </style>
+</head>
+<body class="bg-[#0B1726] text-white overflow-hidden h-screen w-screen flex flex-col items-center justify-center font-sans">
+    
+    <!-- LOADING STATE -->
+    <div id="loading" class="flex flex-col items-center justify-center text-slate-500 p-4 text-center absolute inset-0 bg-[#0B1726] z-50">
+        <img src="./assets/logo.png" class="w-24 h-24 md:w-32 md:h-32 opacity-20 mb-4 animate-pulse object-contain"/>
+        <h1 class="text-xl md:text-2xl tracking-widest uppercase font-bold">Tombala Etkinliği Bekleniyor...</h1>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="mainContent" class="relative h-full w-full flex flex-col items-center justify-center hidden">
+        
+        <!-- Background Effects -->
+        <div class="absolute inset-0 pointer-events-none">
+            <div class="absolute top-0 left-0 w-[300px] h-[300px] md:w-[800px] md:h-[800px] bg-pink-900/20 rounded-full blur-[80px] md:blur-[120px] -translate-x-1/2 -translate-y-1/2"></div>
+            <div class="absolute bottom-0 right-0 w-[300px] h-[300px] md:w-[800px] md:h-[800px] bg-purple-900/20 rounded-full blur-[80px] md:blur-[120px] translate-x-1/2 translate-y-1/2"></div>
+        </div>
+
+        <!-- Header -->
+        <div class="absolute top-4 md:top-8 w-full flex justify-between items-start px-4 md:px-12 z-20">
+            <img src="./assets/logo.png" class="w-12 h-12 md:w-20 md:h-20 object-contain drop-shadow-[0_0_15px_rgba(255,255,255,0.3)]"/>
+            <div class="text-right">
+                <h2 id="viewTitle" class="text-sm md:text-3xl font-bold tracking-tight text-slate-200">Tombala</h2>
+                <div class="inline-flex items-center gap-2 mt-2">
+                    <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                    <span class="text-xs text-green-400 font-bold uppercase tracking-widest">Canlı</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tombala Stage -->
+        <div class="relative z-20 w-full max-w-7xl px-4 mt-4 pb-10 flex flex-col items-center scale-90 origin-center">
+            
+            <!-- Son Çekilen Sayı -->
+            <div class="mb-8 relative group">
+                <div class="absolute -inset-1 bg-gradient-to-r from-yellow-600 to-pink-600 rounded-full blur opacity-50 animate-pulse"></div>
+                <div class="relative w-48 h-48 bg-[#0B1726] rounded-full flex items-center justify-center border-4 border-white/10 shadow-2xl">
+                    <span id="viewLastNumber" class="text-[8rem] font-black text-white leading-none tracking-tighter drop-shadow-2xl transition-all duration-300">-</span>
+                </div>
+                <div class="absolute top-full left-1/2 -translate-x-1/2 mt-6 text-center w-full">
+                    <span class="text-yellow-500 font-bold tracking-[0.3em] text-xs uppercase block">Son Çekilen Sayı</span>
+                </div>
+            </div>
+
+            <!-- 1-90 Grid -->
+            <div class="w-full bg-white/5 backdrop-blur-md rounded-2xl p-6 border border-white/10 shadow-2xl mt-12">
+                 <div class="grid grid-cols-10 gap-1.5 sm:gap-2">
+                     <div id="viewTombolaGrid" class="contents"></div>
+                 </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="absolute bottom-4 md:bottom-6 text-center opacity-30 text-[10px] md:text-sm tracking-[0.3em] md:tracking-[0.5em] uppercase w-full px-4">
+            İnovel Medya ve Tasarım Ekibi
+        </div>
+    </div>
+
+    <script type="module" src="./js/tombola_view.js"></script>
+</body>
+</html>
+
