@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vampir Köylü - Final</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700;900&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        
+        .glass {
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+        }
+        
+        /* Geçiş Animasyonları */
+        .hidden { display: none !important; }
+        .fade-in { animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+        .hide-scroll::-webkit-scrollbar { display: none; }
+        .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="bg-[#020617] text-white h-screen overflow-hidden selection:bg-red-500 selection:text-white">
+
+    <div class="fixed inset-0 pointer-events-none z-0">
+        <div class="absolute top-0 left-0 w-[500px] h-[500px] bg-red-600/10 rounded-full blur-[120px] -translate-x-1/2 -translate-y-1/2"></div>
+        <div class="absolute bottom-0 right-0 w-[500px] h-[500px] bg-blue-600/10 rounded-full blur-[100px] translate-x-1/2 translate-y-1/2"></div>
+    </div>
+
+    <div class="relative z-50 pt-4 pb-2 text-center cursor-pointer" onclick="window.location.reload()">
+        <h1 class="text-2xl font-black tracking-widest text-slate-200 uppercase drop-shadow-lg">
+            <i class="fa-solid fa-ghost text-red-600 mr-2"></i>Vampir Köylü
+        </h1>
+    </div>
+
+    <main class="relative z-40 w-full max-w-md mx-auto p-4 h-[calc(100vh-60px)] flex flex-col">
+
+        <div id="landingScreen" class="flex-1 flex flex-col justify-center gap-4 fade-in">
+            <button onclick="openScreen('createScreen')" class="glass p-6 rounded-2xl group text-left hover:border-red-500/50 transition-all border border-transparent">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 bg-red-500/20 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <i class="fa-solid fa-crown text-red-500 text-xl"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-lg font-bold">Oyun Kur</h2>
+                        <p class="text-[10px] text-slate-400">Yönetici paneli</p>
+                    </div>
+                </div>
+            </button>
+
+            <button onclick="openScreen('joinScreen')" class="glass p-6 rounded-2xl group text-left hover:border-blue-500/50 transition-all border border-transparent">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 bg-blue-500/20 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <i class="fa-solid fa-users text-blue-400 text-xl"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-lg font-bold">Oyuna Katıl</h2>
+                        <p class="text-[10px] text-slate-400">Var olan odaya gir</p>
+                    </div>
+                </div>
+            </button>
+        </div>
+
+        <div id="createScreen" class="hidden flex-1 flex flex-col justify-center fade-in">
+            <button onclick="openScreen('landingScreen')" class="text-slate-500 text-xs mb-4 hover:text-white flex items-center gap-2"><i class="fa-solid fa-arrow-left"></i> Geri</button>
+            <div class="glass p-6 rounded-3xl">
+                <h2 class="text-lg font-bold text-center mb-6 text-red-400">Oda Oluştur</h2>
+                <form id="createForm" class="space-y-4">
+                    <input type="text" id="newRoomName" placeholder="Oda İsmi" required class="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-3 outline-none focus:border-red-500 transition-all">
+                    <button type="submit" id="createBtn" class="w-full bg-red-700 hover:bg-red-600 py-3 rounded-xl font-bold shadow-lg transition-all">OLUŞTUR VE YÖNET</button>
+                </form>
+            </div>
+        </div>
+
+        <div id="joinScreen" class="hidden flex-1 flex flex-col justify-center fade-in">
+            <button onclick="openScreen('landingScreen')" class="text-slate-500 text-xs mb-4 hover:text-white flex items-center gap-2"><i class="fa-solid fa-arrow-left"></i> Geri</button>
+            <div class="glass p-6 rounded-3xl">
+                <h2 class="text-lg font-bold text-center mb-6 text-blue-400">Oyuna Katıl</h2>
+                <form id="joinForm" class="space-y-4">
+                    <div class="relative">
+                        <select id="roomSelect" required class="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-3 outline-none focus:border-blue-500 appearance-none">
+                            <option value="" disabled selected>Odalar Yükleniyor...</option>
+                        </select>
+                        <i class="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none"></i>
+                    </div>
+                    <button type="button" onclick="loadRooms()" class="text-[10px] text-right w-full text-blue-400 hover:text-blue-300">Yenile</button>
+                    
+                    <input type="text" id="playerName" placeholder="İsmin" required class="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-3 outline-none focus:border-blue-500 transition-all">
+                    <button type="submit" id="joinBtn" class="w-full bg-blue-700 hover:bg-blue-600 py-3 rounded-xl font-bold shadow-lg transition-all">KATIL</button>
+                </form>
+            </div>
+        </div>
+
+        <div id="adminPanel" class="hidden flex flex-col h-full fade-in">
+            <div class="glass p-3 rounded-2xl mb-3 flex justify-between items-center">
+                <div>
+                    <h2 class="text-red-500 font-bold text-xs tracking-widest uppercase"><i class="fa-solid fa-crown mr-1"></i> YÖNETİCİ</h2>
+                    <p class="text-[10px] text-slate-400 mt-0.5">Oda: <span id="adminRoomDisplay" class="text-white font-bold">...</span></p>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="addBotsModal()" class="bg-blue-900/30 text-blue-300 text-[10px] px-2 py-1 rounded border border-blue-500/30 hover:bg-blue-900/50"><i class="fa-solid fa-robot mr-1"></i>Bot Ekle</button>
+                    <button onclick="deleteRoom()" class="bg-red-950/50 text-red-400 text-[10px] px-2 py-1 rounded border border-red-900 hover:bg-red-900/50">Odayı Sil</button>
+                </div>
+            </div>
+
+            <div class="glass p-3 rounded-2xl mb-3">
+                <div class="flex items-center justify-between mb-3 gap-2">
+                    <div class="bg-slate-900/50 rounded-lg p-2 flex items-center border border-white/5 flex-1 justify-between">
+                        <span class="text-[10px] text-slate-500 font-bold uppercase mr-1">Vampir</span>
+                        <div class="flex items-center gap-2">
+                            <button onclick="adjustVampire(-1)" class="w-6 h-6 bg-slate-800 rounded text-white text-xs">-</button>
+                            <span id="vampireCountDisplay" class="font-bold text-lg text-red-500">1</span>
+                            <button onclick="adjustVampire(1)" class="w-6 h-6 bg-slate-800 rounded text-white text-xs">+</button>
+                        </div>
+                    </div>
+                    <button onclick="distributeRoles()" class="flex-[1.5] bg-red-700 hover:bg-red-600 rounded-lg text-white font-bold text-xs py-3 shadow-lg active:scale-95 transition-all">
+                        ROLLERİ DAĞIT
+                    </button>
+                </div>
+                
+                <div class="flex items-center justify-between bg-slate-950/50 p-2 rounded-lg border border-white/5">
+                    <div id="timerDisplay" class="font-mono text-xl font-bold text-yellow-500 w-16 text-center">00:00</div>
+                    <div class="flex gap-1">
+                        <button onclick="startTimer(60)" class="bg-slate-800 px-2 py-1 rounded text-[10px] text-slate-300 hover:bg-slate-700">60sn</button>
+                        <button onclick="startTimer(30)" class="bg-slate-800 px-2 py-1 rounded text-[10px] text-slate-300 hover:bg-slate-700">30sn</button>
+                        <button onclick="stopTimer()" class="bg-red-900/30 px-3 py-1 rounded text-[10px] font-bold text-red-400 border border-red-900/50">Dur</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex-1 glass rounded-2xl p-2 overflow-hidden flex flex-col relative">
+                <div class="flex justify-between items-center px-2 mb-2">
+                    <h3 class="text-[10px] text-slate-500 font-bold uppercase">Oyuncular (<span id="playerCountBadge">0</span>)</h3>
+                    <button onclick="resetRolesOnly()" class="text-[10px] text-yellow-500 hover:text-yellow-400 underline">Rolleri Sıfırla</button>
+                </div>
+                
+                <div id="adminPlayerList" class="overflow-y-auto hide-scroll space-y-2 flex-1 pb-2">
+                    <div class="text-center text-slate-600 text-xs mt-10 animate-pulse">Veri bekleniyor...</div>
+                </div>
+            </div>
+        </div>
+
+        <div id="playerLobby" class="hidden flex-1 flex flex-col items-center justify-center fade-in text-center">
+            <div class="w-16 h-16 border-4 border-slate-800 border-t-blue-500 rounded-full animate-spin mb-6"></div>
+            <h2 class="text-xl font-bold text-white mb-2">Bekleniyor...</h2>
+            <p class="text-slate-400 text-xs">Yönetici rolleri dağıttığında ekran açılacak.</p>
+            <div class="mt-8 glass px-4 py-2 rounded-full">
+                <span class="w-2 h-2 bg-green-500 rounded-full inline-block mr-2 animate-pulse"></span>
+                <span id="lobbyRoomName" class="text-xs font-bold text-slate-300">...</span>
+            </div>
+            <button onclick="logout()" class="mt-8 text-xs text-red-500 underline">Çıkış Yap</button>
+        </div>
+
+        <div id="gameScreen" class="hidden flex-1 flex flex-col justify-center fade-in">
+            <div id="roleCard" class="bg-[#020617] border border-white/10 p-8 rounded-3xl shadow-2xl text-center relative overflow-hidden transition-all duration-500">
+                <div class="relative z-10">
+                    <p class="text-slate-500 text-[10px] font-bold tracking-[0.4em] uppercase mb-6">GİZLİ ROLÜN</p>
+                    <i id="roleIcon" class="fa-solid fa-user text-5xl mb-6 text-slate-600"></i>
+                    <h1 id="roleTitle" class="text-4xl font-black mb-4 uppercase drop-shadow-lg tracking-wide">...</h1>
+                    <p id="roleDesc" class="text-sm text-slate-400 font-light leading-relaxed">...</p>
+                </div>
+            </div>
+            <div id="deadBadge" class="hidden mt-6 bg-red-950/50 border border-red-500/30 p-4 rounded-xl text-center animate-pulse">
+                <p class="text-red-500 font-bold uppercase text-sm">☠️ ELENDİNİZ ☠️</p>
+            </div>
+            <button onclick="logout()" class="mt-auto mx-auto text-xs text-slate-600 hover:text-white pb-4">Oyundan Çık</button>
+        </div>
+
+    </main>
+
+    <script type="module">
+        import { db } from './js/firebase-config.js'; 
+        import { collection, addDoc, onSnapshot, doc, serverTimestamp, query, where, orderBy, getDocs, writeBatch, updateDoc, deleteDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        let currentRoomId = localStorage.getItem('vampir_room_id');
+        let myPlayerId = localStorage.getItem('vampir_player_id');
+        let myRoleType = localStorage.getItem('vampir_role_type');
+        let vampireCount = 1;
+        let timerInterval;
+
+        // --- GÜVENLİ DOM YAZICISI (HATAYI ENGELLEYEN KISIM) ---
+        const safeText = (id, text) => {
+            const el = document.getElementById(id);
+            if(el) el.innerText = text;
+        };
+
+        // --- SAYFA YÖNETİMİ ---
+        window.openScreen = (screenId) => {
+            ['landingScreen', 'createScreen', 'joinScreen', 'adminPanel', 'playerLobby', 'gameScreen'].forEach(id => {
+                const el = document.getElementById(id);
+                if(el) el.classList.add('hidden');
+            });
+            const target = document.getElementById(screenId);
+            if(target) target.classList.remove('hidden');
+            
+            if(screenId === 'joinScreen') loadRooms();
+        };
+
+        // --- BAŞLANGIÇ ---
+        if (currentRoomId && myRoleType) {
+            if (myRoleType === 'admin') initAdmin();
+            else if (myRoleType === 'player') initPlayer();
+            else openScreen('landingScreen');
+        } else {
+            openScreen('landingScreen');
+        }
+
+        // --- ODA OLUŞTUR ---
+        document.getElementById('createForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('createBtn');
+            btn.disabled = true; 
+            btn.innerText = "Oluşturuluyor...";
+
+            const roomName = document.getElementById('newRoomName').value.trim();
+            if(!roomName) return;
+
+            try {
+                const roomRef = await addDoc(collection(db, "vampireRooms"), {
+                    name: roomName,
+                    createdAt: serverTimestamp()
+                });
+
+                localStorage.setItem('vampir_room_id', roomRef.id);
+                localStorage.setItem('vampir_role_type', 'admin');
+                currentRoomId = roomRef.id;
+
+                initAdmin();
+            } catch(err) {
+                alert("Hata: " + err.message);
+                btn.disabled = false;
+            }
+        });
+
+        // --- KATIL ---
+        document.getElementById('joinForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('joinBtn');
+            btn.disabled = true; 
+
+            const roomId = document.getElementById('roomSelect').value;
+            const name = document.getElementById('playerName').value.trim();
+            if(!roomId || !name) { btn.disabled = false; return; }
+
+            try {
+                const playerRef = await addDoc(collection(db, "vampirePlayers"), {
+                    roomId: roomId,
+                    name: name,
+                    role: null,
+                    isAlive: true,
+                    votes: 0,
+                    joinedAt: serverTimestamp()
+                });
+
+                localStorage.setItem('vampir_room_id', roomId);
+                localStorage.setItem('vampir_player_id', playerRef.id);
+                localStorage.setItem('vampir_role_type', 'player');
+                
+                currentRoomId = roomId;
+                myPlayerId = playerRef.id;
+
+                initPlayer();
+            } catch(err) {
+                alert("Hata: " + err.message);
+                btn.disabled = false;
+            }
+        });
+
+        window.loadRooms = async () => {
+            const select = document.getElementById('roomSelect');
+            if(!select) return;
+            select.innerHTML = '<option>Yükleniyor...</option>';
+            // OrderBy kaldırıldı (Index hatasını önlemek için), istemcide sıralayabiliriz gerekirse
+            const q = query(collection(db, "vampireRooms")); 
+            const snap = await getDocs(q);
+            select.innerHTML = '<option value="" disabled selected>Oda Seçiniz...</option>';
+            snap.forEach(doc => {
+                const opt = document.createElement('option');
+                opt.value = doc.id;
+                opt.text = doc.data().name;
+                select.appendChild(opt);
+            });
+        };
+
+        // --- ADMİN MANTIĞI ---
+        function initAdmin() {
+            openScreen('adminPanel');
+
+            // Oda Adı
+            onSnapshot(doc(db, "vampireRooms", currentRoomId), (docSnap) => {
+                if(!docSnap.exists()) { logout(); return; }
+                safeText('adminRoomDisplay', docSnap.data().name);
+            });
+
+            // Oyuncular - ORDER BY KALDIRILDI (Hata Çözümü)
+            const q = query(collection(db, "vampirePlayers"), where("roomId", "==", currentRoomId));
+            
+            onSnapshot(q, (snapshot) => {
+                let players = snapshot.docs.map(d => ({id: d.id, ...d.data()}));
+                
+                // JS tarafında sıralama (En son giren en altta)
+                players.sort((a, b) => (a.joinedAt?.seconds || 0) - (b.joinedAt?.seconds || 0));
+
+                safeText('playerCountBadge', `${players.length} Kişi`);
+                
+                const listEl = document.getElementById('adminPlayerList');
+                if(!listEl) return; // Güvenlik
+
+                if(players.length === 0) {
+                    listEl.innerHTML = '<div class="text-center text-slate-600 text-xs mt-10">Kimse yok.</div>';
+                    return;
+                }
+
+                listEl.innerHTML = players.map(p => {
+                    const isDead = !p.isAlive;
+                    let border = 'border-white/5';
+                    let roleTag = '';
+                    
+                    if(p.role === 'vampire') { border = 'border-red-500/50'; roleTag = '<span class="text-[10px] text-red-400 font-bold border border-red-500/20 px-1 rounded ml-2">VAMPİR</span>'; }
+                    else if(p.role === 'villager') { border = 'border-green-500/50'; roleTag = '<span class="text-[10px] text-green-400 font-bold border border-green-500/20 px-1 rounded ml-2">KÖYLÜ</span>'; }
+
+                    return `
+                        <div class="flex items-center justify-between p-2 rounded-xl bg-slate-900/40 border ${border} ${isDead ? 'opacity-50 grayscale' : ''}">
+                            <div class="flex items-center">
+                                <span class="font-bold text-sm text-slate-200 ${isDead ? 'line-through' : ''}">${p.name}</span>
+                                ${isDead ? '<span class="text-[10px] text-red-500 font-bold ml-2">ÖLDÜ</span>' : roleTag}
+                            </div>
+                            
+                            <div class="flex items-center gap-2">
+                                <div class="flex items-center bg-slate-950 rounded-lg p-0.5 border border-white/5">
+                                    <button onclick="window.vote('${p.id}', -1)" class="w-6 h-6 text-slate-400 hover:text-white font-bold">-</button>
+                                    <span class="text-yellow-500 font-mono font-bold w-6 text-center text-sm">${p.votes || 0}</span>
+                                    <button onclick="window.vote('${p.id}', 1)" class="w-6 h-6 text-blue-400 hover:text-blue-300 font-bold">+</button>
+                                </div>
+                                ${!isDead ? `<button onclick="window.kill('${p.id}')" class="w-6 h-6 flex items-center justify-center text-xs text-red-500 border border-red-500/30 rounded hover:bg-red-900/30"><i class="fa-solid fa-skull"></i></button>` : ''}
+                                <button onclick="window.kick('${p.id}')" class="w-6 h-6 flex items-center justify-center text-xs text-slate-600 hover:text-white"><i class="fa-solid fa-trash"></i></button>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            });
+        }
+
+        // --- OYUNCU MANTIĞI ---
+        function initPlayer() {
+            onSnapshot(doc(db, "vampireRooms", currentRoomId), (docSnap) => {
+                if(!docSnap.exists()) { logout(); return; }
+                safeText('lobbyRoomName', docSnap.data().name);
+            });
+
+            onSnapshot(doc(db, "vampirePlayers", myPlayerId), (docSnap) => {
+                if(!docSnap.exists()) { logout(); return; }
+                const data = docSnap.data();
+
+                if(!data.role) {
+                    openScreen('playerLobby');
+                } else {
+                    openScreen('gameScreen');
+                    renderRole(data);
+                }
+            });
+        }
+
+        function renderRole(data) {
+            const el = (id) => document.getElementById(id);
+            const isDead = !data.isAlive;
+            
+            if(isDead) {
+                el('roleCard').classList.add('grayscale', 'opacity-20');
+                el('deadBadge').classList.remove('hidden');
+            } else {
+                el('roleCard').classList.remove('grayscale', 'opacity-20');
+                el('deadBadge').classList.add('hidden');
+            }
+
+            if (data.role === 'vampire') {
+                safeText('roleTitle', "VAMPİR");
+                el('roleTitle').className = "text-4xl font-black mb-2 uppercase text-red-600 tracking-wider drop-shadow-lg";
+                safeText('roleDesc', "Gece avlan, gündüz gizlen.");
+                el('roleIcon').className = "fa-solid fa-bat text-5xl mb-6 text-red-600";
+                el('roleCard').style.borderColor = "rgba(220, 38, 38, 0.4)";
+            } else {
+                safeText('roleTitle', "KÖYLÜ");
+                el('roleTitle').className = "text-4xl font-black mb-2 uppercase text-green-500 tracking-wider drop-shadow-lg";
+                safeText('roleDesc', "Köyü koru, vampiri bul.");
+                el('roleIcon').className = "fa-solid fa-shield-halved text-5xl mb-6 text-green-500";
+                el('roleCard').style.borderColor = "rgba(34, 197, 94, 0.4)";
+            }
+        }
+
+        // --- GLOBAL AKSİYONLAR ---
+        window.adjustVampire = (n) => {
+            vampireCount = Math.max(1, vampireCount + n);
+            safeText('vampireCountDisplay', vampireCount);
+        };
+
+        window.addBotsModal = async () => {
+            const countStr = prompt("Kaç bot eklensin?", "5");
+            const count = parseInt(countStr);
+            if(!count) return;
+            const batch = writeBatch(db);
+            for(let i=0; i<count; i++) {
+                const ref = doc(collection(db, "vampirePlayers"));
+                batch.set(ref, {
+                    roomId: currentRoomId,
+                    name: `Bot ${Math.floor(Math.random()*900)+100}`,
+                    role: null, isAlive: true, votes: 0, joinedAt: serverTimestamp()
+                });
+            }
+            await batch.commit();
+        };
+
+        window.distributeRoles = async () => {
+            // Index hatasını önlemek için query'i basit tutuyoruz
+            const q = query(collection(db, "vampirePlayers"), where("roomId", "==", currentRoomId));
+            const snap = await getDocs(q);
+            let players = snap.docs.map(d => ({id: d.id, ...d.data()}));
+            
+            if(players.length < 3) return alert("En az 3 oyuncu lazım!");
+
+            let shuffled = [...players].sort(() => Math.random() - 0.5);
+            const batch = writeBatch(db);
+
+            shuffled.forEach((p, i) => {
+                const role = i < vampireCount ? 'vampire' : 'villager';
+                batch.update(doc(db, "vampirePlayers", p.id), { role: role, isAlive: true, votes: 0 });
+            });
+            await batch.commit();
+        };
+
+        window.resetRolesOnly = async () => {
+            if(!confirm("Roller sıfırlanacak?")) return;
+            const q = query(collection(db, "vampirePlayers"), where("roomId", "==", currentRoomId));
+            const snap = await getDocs(q);
+            const batch = writeBatch(db);
+            snap.forEach(d => batch.update(d.ref, { role: null, votes: 0, isAlive: true }));
+            await batch.commit();
+        };
+
+        window.deleteRoom = async () => {
+            if(!confirm("Odayı ve oyuncuları silmek istediğine emin misin?")) return;
+            // Oyuncuları sil
+            const q = query(collection(db, "vampirePlayers"), where("roomId", "==", currentRoomId));
+            const snap = await getDocs(q);
+            const batch = writeBatch(db);
+            snap.forEach(d => batch.delete(d.ref));
+            // Odayı sil
+            batch.delete(doc(db, "vampireRooms", currentRoomId));
+            await batch.commit();
+            
+            // Sayfayı yenile ve çık
+            logout();
+        };
+
+        window.vote = async (pid, delta) => {
+            const ref = doc(db, "vampirePlayers", pid);
+            const s = await getDoc(ref);
+            if(s.exists()) {
+                const nv = Math.max(0, (s.data().votes || 0) + delta);
+                await updateDoc(ref, { votes: nv });
+            }
+        };
+
+        window.kill = async (pid) => { if(confirm("Öldür?")) await updateDoc(doc(db, "vampirePlayers", pid), { isAlive: false }); };
+        window.kick = async (pid) => { if(confirm("At?")) await deleteDoc(doc(db, "vampirePlayers", pid)); };
+
+        // --- TIMER ---
+        window.startTimer = (sec) => {
+            clearInterval(timerInterval);
+            let t = sec;
+            const el = document.getElementById('timerDisplay');
+            el.innerText = t;
+            timerInterval = setInterval(() => {
+                t--;
+                el.innerText = t;
+                if(t <= 0) { clearInterval(timerInterval); el.innerText = "BİTTİ"; }
+            }, 1000);
+        };
+        window.stopTimer = () => { clearInterval(timerInterval); document.getElementById('timerDisplay').innerText = "00:00"; };
+
+        window.logout = () => {
+            localStorage.removeItem('vampir_room_id');
+            localStorage.removeItem('vampir_player_id');
+            localStorage.removeItem('vampir_role_type');
+            window.location.reload();
+        };
+    </script>
+</body>
+</html>
