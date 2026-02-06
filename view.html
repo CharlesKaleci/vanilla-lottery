@@ -15,6 +15,13 @@
         
         .zoom-in { animation: zoomIn 0.3s ease-out forwards; opacity: 0; }
         @keyframes zoomIn { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        
+        /* Yanıp sönen animasyon */
+        .prize-pulse { animation: prizePulse 1s ease-in-out infinite; }
+        @keyframes prizePulse { 
+            0%, 100% { opacity: 1; transform: scale(1); } 
+            50% { opacity: 0.6; transform: scale(1.05); } 
+        }
     </style>
 </head>
 <body class="bg-[#0B1726] text-white overflow-hidden h-screen w-screen flex flex-col items-center justify-center font-sans">

@@ -487,6 +487,7 @@ addPrizeForm.addEventListener('submit', async (e) => {
     const titleEl = document.getElementById('newPrizeTitle');
     const qtyEl = document.getElementById('newPrizeQuantity');
     const resEl = document.getElementById('newPrizeReserveQuantity');
+    const orderEl = document.getElementById('newPrizeOrder');
     
     if (!titleEl.value.trim()) return;
 
@@ -495,6 +496,7 @@ addPrizeForm.addEventListener('submit', async (e) => {
         title: titleEl.value.trim(), 
         quantity: parseInt(qtyEl.value) || 1,
         reserveQuantity: parseInt(resEl.value) || 1,
+        order: parseInt(orderEl.value) || 999,
         winners: [], 
         reserves: [], 
         createdAt: serverTimestamp() 
@@ -503,7 +505,9 @@ addPrizeForm.addEventListener('submit', async (e) => {
     titleEl.value = '';
     qtyEl.value = 1;
     resEl.value = 1;
+    orderEl.value = '';
 });
+
 
 function renderPrizes() {
     detailPrizeCount.textContent = `Toplam ${prizes.length} Ödül Tanımlandı`;
@@ -518,7 +522,14 @@ function renderPrizes() {
         return;
     }
 
-    prizesList.innerHTML = prizes.map((prize, index) => {
+    // Ödülleri sıraya göre sırala
+    const sortedPrizes = [...prizes].sort((a, b) => {
+        const orderA = a.order || 999;
+        const orderB = b.order || 999;
+        return orderA - orderB;
+    });
+    
+    prizesList.innerHTML = sortedPrizes.map((prize, index) => {
         const total = prize.quantity || 1;
         const drawn = prize.winners?.length || 0;
         const remaining = total - drawn;
@@ -695,6 +706,26 @@ async function drawWinner(prizeId, type) {
                 count: quantityToDraw
             } 
         });
+
+        // Asil kazananları excludedUsers listesine ekle
+        if (type === 'asil') {
+            const raffleRef = doc(db, "mainRaffle", selectedRaffle.id);
+            const raffleDoc = await getDoc(raffleRef);
+            const currentRaffle = raffleDoc.exists() ? raffleDoc.data() : selectedRaffle;
+            const currentExcluded = currentRaffle.excludedUsers || [];
+            const excludedUsersWithPrizes = currentRaffle.excludedUsersWithPrizes || {};
+            
+            // Yeni kazananları excluded listesine ekle
+            const updatedExcludedWithPrizes = { ...excludedUsersWithPrizes };
+            newWinnerIds.forEach(id => {
+                updatedExcludedWithPrizes[id] = prizeTitle;
+            });
+            
+            await updateDoc(raffleRef, {
+                excludedUsers: arrayUnion(...newWinnerIds),
+                excludedUsersWithPrizes: updatedExcludedWithPrizes
+            });
+        }
 
         await setDoc(doc(db, "status", "live_draw"), { status: 'idle' });
     }, 5000);

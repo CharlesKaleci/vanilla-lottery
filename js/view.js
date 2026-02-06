@@ -1,10 +1,13 @@
 import { db } from './firebase-config.js';
-import { doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { doc, onSnapshot, collection, query, where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 let activeRaffle = null;
 let participantCount = 0;
+// Varsayılan durumu null/boş başlatıyoruz ki ilk açılışta algılayalım
 let liveState = { status: 'idle', countdown: 0, currentPrize: '', drawType: '' };
 let lastWinner = null;
+let allPrizes = [];
+let countdownInterval = null; // Interval kontrolü için değişken
 
 const loadingEl = document.getElementById('loading');
 const mainContentEl = document.getElementById('mainContent');
@@ -34,6 +37,24 @@ onSnapshot(doc(db, "status", "active_mainRaffle"), (statusDoc) => {
                 if (data.lastWinner) {
                     lastWinner = data.lastWinner;
                 }
+                // Sadece raffle verisi değiştiğinde sahneyi güncelle (Canlı sayaç hariç)
+                if(liveState.status !== 'drawing') {
+                    updateView();
+                }
+            }
+        });
+        
+        // Ödülleri Dinle
+        const prizesQuery = query(
+            collection(db, "prizes"), 
+            where("mainRaffleId", "==", raffleId)
+        );
+        onSnapshot(prizesQuery, (snapshot) => {
+            allPrizes = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            // Ödülleri sıraya göre sırala (order yoksa sona at)
+            allPrizes.sort((a, b) => (a.order || 999) - (b.order || 999));
+            // Sadece bekleme modundaysak ödül listesi güncellemesi için view'i yenile
+            if(liveState.status === 'idle') {
                 updateView();
             }
         });
@@ -49,26 +70,64 @@ onSnapshot(doc(db, "status", "live_draw"), (docSnap) => {
     if (docSnap.exists()) {
         const newState = docSnap.data();
         
-        // Eğer durumu değiştiyse veya countdown değiştiyse render et
-        if (JSON.stringify(liveState) !== JSON.stringify(newState)) {
-            liveState = newState;
-            updateView();
+        // Durum değişikliği veya yeni bir ödül çekimi var mı?
+        const statusChanged = liveState.status !== newState.status;
+        const prizeChanged = liveState.currentPrize !== newState.currentPrize;
+        const typeChanged = liveState.drawType !== newState.drawType;
+
+        // Eğer 'drawing' modundaysak ve sadece countdown veritabanından geldiyse,
+        // yerel sayacı bozmamak için veritabanındaki countdown'ı yoksay (sadece ilk girişte al).
+        // Ancak admin panelinden "tekrar başlat" gibi bir komut gelirse (countdown artarsa) onu al.
+        let shouldUpdateCountdown = false;
+        if (statusChanged || prizeChanged || typeChanged) {
+            shouldUpdateCountdown = true;
+        } else if (newState.status === 'drawing' && newState.countdown > liveState.countdown) {
+            // Admin süreyi resetlediyse al
+            shouldUpdateCountdown = true;
+        }
+
+        if (shouldUpdateCountdown) {
+            liveState = { ...newState }; // State'i güncelle
             
-            // Konfeti kontrolü
-            if (liveState.status === 'idle' && lastWinner && lastWinner.type === 'asil') {
+            // Eğer çekiliş bittiyse (idle) ve kazanan asil ise konfeti patlat
+            if (liveState.status === 'idle' && statusChanged && lastWinner && lastWinner.type === 'asil') {
                 fireConfetti();
             }
+            
+            updateView(); // Ekranı komple yeniden çiz
+            manageTimer(); // Sayacı yönet
         }
     }
 });
 
-// Geri Sayım Mantığı
-setInterval(() => {
-    if (liveState.status === 'drawing' && liveState.countdown > 0) {
-        liveState.countdown--;
-        updateView(); 
+// Sayaç Yönetimi (setInterval yerine kontrollü yapı)
+function manageTimer() {
+    // Mevcut sayacı temizle
+    if (countdownInterval) {
+        clearInterval(countdownInterval);
+        countdownInterval = null;
     }
-}, 1000);
+
+    // Eğer çizim modundaysak yeni sayaç başlat
+    if (liveState.status === 'drawing' && liveState.countdown > 0) {
+        countdownInterval = setInterval(() => {
+            if (liveState.countdown > 0) {
+                liveState.countdown--;
+                updateTimerDOMOnly(); // Sadece sayıyı güncelle (HTML'i yıkma)
+            } else {
+                clearInterval(countdownInterval);
+            }
+        }, 1000);
+    }
+}
+
+// Sadece Sayacı Güncelleyen Fonksiyon (Performans ve Animasyon Koruması İçin)
+function updateTimerDOMOnly() {
+    const timerElement = document.getElementById('liveTimerDisplay');
+    if (timerElement) {
+        timerElement.innerText = liveState.countdown;
+    }
+}
 
 function updateView() {
     renderLotteryStage();
@@ -83,19 +142,20 @@ function renderLotteryStage() {
 
     // DURUM 1: ÇEKİLİŞ YAPILIYOR (GERİ SAYIM)
     if (liveState.status === 'drawing') {
+        // Not: ID olarak 'liveTimerDisplay' ekledik
         html = `
             <div class="animate-in zoom-in duration-300 flex flex-col items-center w-full">
                 <div class="mb-4 md:mb-12 space-y-4 md:space-y-6 w-full">
                     <span class="px-4 py-1 md:px-6 md:py-2 rounded-lg font-bold tracking-[0.2em] md:tracking-[0.3em] uppercase text-xs md:text-sm shadow-2xl ${isAsil ? 'bg-yellow-500 text-black' : 'bg-blue-600 text-white'}">
                         ${isAsil ? '🏆 ASİL TALİHLİ ARANIYOR' : '🥈 YEDEK TALİHLİ ARANIYOR'}
                     </span>
-                    <h1 class="text-3xl sm:text-5xl md:text-7xl font-bold text-white drop-shadow-2xl mt-4 px-2 break-words leading-tight">
+                    <h1 class="prize-pulse text-3xl sm:text-5xl md:text-7xl font-bold text-white drop-shadow-2xl mt-4 px-2 break-words leading-tight">
                         ${liveState.currentPrize}
                     </h1>
                 </div>
 
                 <div class="relative mt-4 md:mt-8">
-                    <div class="text-9xl sm:text-[10rem] md:text-[15rem] lg:text-[18rem] leading-none font-black tabular-nums tracking-tighter ${isAsil ? 'text-yellow-400' : 'text-blue-300'} drop-shadow-[0_0_50px_rgba(255,255,255,0.2)] animate-pulse transition-all duration-300">
+                    <div id="liveTimerDisplay" class="text-9xl sm:text-[10rem] md:text-[15rem] lg:text-[18rem] leading-none font-black tabular-nums tracking-tighter ${isAsil ? 'text-yellow-400' : 'text-blue-300'} drop-shadow-[0_0_50px_rgba(255,255,255,0.2)] animate-pulse transition-all duration-300">
                         ${liveState.countdown}
                     </div>
                     <div class="absolute inset-0 border-[6px] md:border-[10px] ${isAsil ? 'border-yellow-500' : 'border-blue-500'} rounded-full opacity-20 animate-ping"></div>
@@ -113,7 +173,6 @@ function renderLotteryStage() {
         const borderColor = displayAsil ? 'border-yellow-500' : 'border-blue-500';
         const shadowColor = displayAsil ? 'shadow-yellow-500/20' : 'shadow-blue-500/20';
         
-        // Font boyutu hesapla
         let fontSize = 'text-xs sm:text-sm md:text-sm lg:text-base';
         if (count === 1) fontSize = 'text-4xl sm:text-5xl md:text-7xl lg:text-8xl';
         else if (count === 2) fontSize = 'text-3xl sm:text-4xl md:text-6xl lg:text-7xl';
@@ -164,14 +223,42 @@ function renderLotteryStage() {
 
                 ${winnersHtml}
                 
-                <div class="mt-8 md:mt-12 text-slate-500 text-xs md:text-sm animate-pulse tracking-wide">
-                    Yeni çekiliş için admin bekleniyor...
+                <div class="mt-8 md:mt-12 space-y-3">
+                    ${(() => {
+                        if (!allPrizes || allPrizes.length === 0) return '';
+                        
+                        const currentPrize = allPrizes.find(p => p.title === lastWinner.prize);
+                        // Eğer ödül bulunamazsa veya liste boşsa
+                        if (!currentPrize && lastWinner.prize) {
+                             // İlk ödülü göster
+                             // return ''; 
+                        }
+
+                        const currentOrder = currentPrize ? (currentPrize.order || 999) : -1;
+                        const nextPrize = allPrizes.find(p => {
+                            const pOrder = p.order || 999;
+                            return pOrder > currentOrder;
+                        });
+                        
+                        if (nextPrize) {
+                            return `
+                                <div class="bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-blue-500/20 rounded-xl px-6 py-4 backdrop-blur-sm">
+                                    <p class="text-slate-400 text-xs md:text-sm mb-2">📢 SIRADAKİ ÇEKİLİŞ</p>
+                                    <p class="text-white font-bold text-base md:text-xl">${nextPrize.title}</p>
+                                </div>
+                            `;
+                        } else {
+                            // Eğer bu son ödülse ve başka ödül kalmadıysa
+                            return '<div class="text-slate-500 text-sm">Tüm çekilişler tamamlandı.</div>';
+                        }
+                    })()}
                 </div>
             </div>
         `;
     }
     // DURUM 3: BAŞLANGIÇ (BOŞTA)
     else {
+        // Bekleme modu HTML'i aynı...
         html = `
              <div class="flex flex-col items-center opacity-50 px-4">
                 <div class="w-16 h-16 md:w-24 md:h-24 rounded-full border-4 border-white/10 border-t-blue-500 animate-spin mb-6 md:mb-8"></div>

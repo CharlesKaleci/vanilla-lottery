@@ -236,10 +236,15 @@
                             <!-- Ödül Ekleme Formu -->
                             <form id="addPrizeForm" class="flex flex-col gap-4">
                                 <div class="flex flex-col sm:flex-row gap-4">
+                                    <div class="w-24 relative">
+                                        <label class="block text-[10px] text-slate-400 uppercase tracking-wider mb-1.5 font-bold">SIRA</label>
+                                        <input type="number" id="newPrizeOrder" min="1" placeholder="1" class="w-full bg-[#1a2942]/60 border border-purple-500/30 rounded-xl px-5 py-4 text-white text-sm outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/50 transition-all placeholder-slate-500 shadow-inner text-center font-bold">
+                                    </div>
                                     <div class="flex-[3] relative">
+                                        <label class="block text-[10px] text-slate-400 uppercase tracking-wider mb-1.5 font-bold">ÖDÜL ADI</label>
                                         <input type="text" id="newPrizeTitle" placeholder="🎁 Ödül Adı (Örn: Çorap)" class="w-full bg-[#1a2942]/60 border border-white/10 rounded-xl px-5 py-4 text-white text-sm outline-none focus:border-green-500/50 focus:ring-1 focus:ring-green-500/50 transition-all placeholder-slate-500 shadow-inner">
                                     </div>
-                                    <button type="submit" class="bg-green-600 hover:bg-green-500 text-white px-8 py-4 sm:py-0 rounded-xl font-bold shadow-lg transition-all active:scale-95 text-sm">
+                                    <button type="submit" class="bg-green-600 hover:bg-green-500 text-white px-8 py-4 sm:py-0 rounded-xl font-bold shadow-lg transition-all active:scale-95 text-sm self-end">
                                         EKLE
                                     </button>
                                 </div>
