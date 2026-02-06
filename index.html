@@ -3,143 +3,126 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Çekiliş Kayıt - İnovel</title>
+    <title>İnovel Etkinlik Platformu</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    animation: {
-                        'fade-in-down': 'fadeInDown 1s ease-out',
-                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-                    },
-                    keyframes: {
-                        fadeInDown: {
-                            '0%': { opacity: '0', transform: 'translateY(-10px)' },
-                            '100%': { opacity: '1', transform: 'translateY(0)' },
-                        }
-                    }
-                }
-            }
-        }
-    </script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
-        html, body { margin: 0; padding: 0; overflow-x: hidden; height: 100%; width: 100%; }
-        ::-webkit-scrollbar { width: 0px; background: transparent; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700;900&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        
+        .glass-card {
+            background: rgba(26, 41, 66, 0.4);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .glass-card:hover {
+            background: rgba(26, 41, 66, 0.6);
+            border-color: rgba(255, 255, 255, 0.2);
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+        }
+
+        .animate-in { animation: animateIn 0.8s ease-out forwards; opacity: 0; }
+        @keyframes animateIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
-<body class="bg-[#0B1726] text-white font-sans">
-    <div class="min-h-screen w-full flex flex-col lg:flex-row overflow-hidden">
-        
-        <!-- SOL PANEL -->
-        <div class="w-full lg:w-5/12 relative flex flex-col items-center justify-center p-8 lg:p-12 bg-[#0B1726] border-b lg:border-b-0 lg:border-r border-white/10 z-10">
-            <div class="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
-                <div class="absolute top-[-10%] left-[-10%] w-[70%] h-[70%] bg-red-600/20 rounded-full mix-blend-screen filter blur-[80px] opacity-40 animate-pulse"></div>
-                <div class="absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] bg-green-600/20 rounded-full mix-blend-screen filter blur-[80px] opacity-40 animate-pulse delay-1000"></div>
-            </div>
+<body class="bg-[#0B1726] text-white h-screen overflow-hidden flex flex-col relative selection:bg-blue-500 selection:text-white">
 
-            <div class="relative z-10 flex flex-col items-center text-center">
-                <div class="bg-white/5 p-4 rounded-full mb-6 shadow-2xl backdrop-blur-sm border border-white/10 animate-fade-in-down">
-                    <img src="./assets/logo.png" alt="Logo" class="w-20 h-20 object-contain drop-shadow-lg" />
-                </div>
-
-                <h2 class="text-[10px] font-bold tracking-[0.3em] text-blue-200/80 uppercase mb-2">
-                    İnovasyon ve Liderlik Topluluğu
-                </h2>
-
-                <h1 id="raffleTitle" class="text-3xl lg:text-4xl font-extrabold text-white tracking-tight mb-8 drop-shadow-lg">
-                    Çekiliş Platformu
-                </h1>
-
-                <div id="statusContainer" class="transform transition-all hover:scale-105">
-                    <!-- Javascript ile doldurulacak -->
-                    <div class="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-red-500/10 border border-red-500/20 backdrop-blur-md">
-                        <span class="h-2 w-2 rounded-full bg-red-500 animate-pulse"></span>
-                        <span class="text-xs font-bold text-red-200 tracking-wide uppercase">Yükleniyor...</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- SAĞ PANEL: FORM -->
-        <div class="w-full lg:w-7/12 relative flex flex-col items-center justify-center p-6 sm:p-12 lg:p-24 bg-[#0B1726]/95 backdrop-blur-sm">
-            <div class="w-full max-w-lg space-y-8">
-                
-                <div class="text-left hidden lg:block">
-                    <h3 class="text-2xl font-bold text-white mb-2">Hemen Katıl</h3>
-                    <p class="text-blue-200/60 text-sm">Aşağıdaki formu doldurarak çekilişe kaydını tamamla.</p>
-                </div>
-
-                <form id="registerForm" class="space-y-5">
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div class="group relative">
-                            <input required type="text" id="name" class="w-full px-4 py-4 rounded-xl bg-[#1a2942]/80 border border-slate-600/50 text-white text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all hover:bg-[#1a2942]" placeholder="Adınız">
-                        </div>
-
-                        <div class="group relative">
-                            <input required type="text" id="surname" class="w-full px-4 py-4 rounded-xl bg-[#1a2942]/80 border border-slate-600/50 text-white text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all hover:bg-[#1a2942]" placeholder="Soyadınız">
-                        </div>
-                    </div>
-
-                    <!-- Instagram alanı gizli -->
-                    <div class="group relative hidden">
-                        <input type="text" id="instagram" class="w-full pl-11 pr-4 py-4 rounded-xl bg-[#1a2942]/80 border border-slate-600/50 text-white text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all hover:bg-[#1a2942]" placeholder="Instagram (Opsiyonel)">
-                    </div>
-
-                    <div class="group relative">
-                        <input required type="email" id="email" class="w-full px-4 py-4 rounded-xl bg-[#1a2942]/80 border border-slate-600/50 text-white text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all hover:bg-[#1a2942]" placeholder="E-posta Adresiniz">
-                        <p class="mt-2 text-xs text-slate-400 leading-relaxed px-1">
-                            Dijital ödüllerde kod gönderimi ve herhangi bir problem çıkması dahilinde iletişime geçebilmemiz için mail bilginizi rica ediyoruz.
-                        </p>
-                    </div>
-
-                    <div class="group relative">
-                        <label class="block text-sm text-slate-400 mb-2 ml-1">Cinsiyet</label>
-                        <div class="flex gap-4">
-                            <label class="flex-1 cursor-pointer">
-                                <input type="radio" name="gender" value="female" class="peer sr-only" required>
-                                <div class="w-full py-3 px-4 rounded-xl bg-[#1a2942]/80 border border-slate-600/50 text-slate-400 text-sm text-center peer-checked:bg-pink-500/20 peer-checked:text-pink-400 peer-checked:border-pink-500/50 transition-all hover:bg-[#1a2942]">
-                                    Kadın
-                                </div>
-                            </label>
-                            <label class="flex-1 cursor-pointer">
-                                <input type="radio" name="gender" value="male" class="peer sr-only">
-                                <div class="w-full py-3 px-4 rounded-xl bg-[#1a2942]/80 border border-slate-600/50 text-slate-400 text-sm text-center peer-checked:bg-blue-500/20 peer-checked:text-blue-400 peer-checked:border-blue-500/50 transition-all hover:bg-[#1a2942]">
-                                    Erkek
-                                </div>
-                            </label>
-                            <label class="flex-1 cursor-pointer">
-                                <input type="radio" name="gender" value="prefer_not_to_say" class="peer sr-only">
-                                <div class="w-full py-3 px-4 rounded-xl bg-[#1a2942]/80 border border-slate-600/50 text-slate-400 text-sm text-center peer-checked:bg-purple-500/20 peer-checked:text-purple-400 peer-checked:border-purple-500/50 transition-all hover:bg-[#1a2942]">
-                                    Belirtmek İstemiyorum
-                                </div>
-                            </label>
-                        </div>
-                    </div>
-
-                    <div id="errorMessage" class="hidden p-3 bg-red-500/20 border-l-4 border-red-500 text-red-200 text-sm rounded-r-lg animate-pulse"></div>
-
-                    <div class="pt-4 flex flex-col gap-3">
-                        <button type="submit" id="submitBtn" disabled class="w-full py-4 bg-gradient-to-r from-blue-700 to-indigo-700 hover:from-blue-600 hover:to-indigo-600 text-white font-bold rounded-xl shadow-lg shadow-blue-900/50 active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed border border-white/10 text-sm tracking-wide uppercase">
-                            ÇEKİLİŞE KATIL
-                        </button>
-
-                        <button type="button" onclick="window.location.href='view.html'" class="w-full py-3 bg-white/5 hover:bg-white/10 border border-white/10 text-blue-200 font-medium rounded-xl transition-all flex items-center justify-center gap-2 text-xs">
-                            <svg class="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
-                            Sadece İzlemek İstiyorum
-                        </button>
-                    </div>
-                </form>
-
-                <footer class="flex bottom-0 pt-8 text-center lg:text-left mt-auto justify-center">
-                    <p class="text-[10px] font-bold tracking-[0.2em] text-slate-500 uppercase opacity-60 hover:opacity-100 transition-opacity cursor-default">
-                        İnovel Medya ve Tasarım Ekibi 
-                    </p>
-                </footer>
-            </div>
-        </div>
+    <div class="fixed inset-0 w-full h-full pointer-events-none z-0 overflow-hidden bg-[#0B1726]">
+        <div class="absolute top-[-10%] left-[-10%] w-[800px] h-[800px] bg-blue-600/20 rounded-full mix-blend-screen filter blur-[120px] opacity-30 animate-pulse"></div>
+        <div class="absolute bottom-[-10%] right-[-10%] w-[800px] h-[800px] bg-purple-600/20 rounded-full mix-blend-screen filter blur-[120px] opacity-30 animate-pulse delay-1000"></div>
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-indigo-500/10 rounded-full mix-blend-screen filter blur-[100px] opacity-20"></div>
     </div>
 
-    <script type="module" src="./js/register.js"></script>
+    <nav class="relative z-50 w-full px-6 py-6 flex justify-between items-center max-w-7xl mx-auto">
+        <div class="flex items-center gap-3">
+            <div class="bg-white/5 p-2 rounded-xl border border-white/10 backdrop-blur-sm">
+                <img src="./assets/logo.png" alt="Logo" class="w-8 h-8 object-contain"/>
+            </div>
+            <div>
+                <h1 class="font-bold text-white leading-none text-lg tracking-tight">İNOVEL</h1>
+                <span class="text-[10px] text-blue-300/60 tracking-[0.3em] uppercase block mt-1">Etkinlik Platformu</span>
+            </div>
+        </div>
+        
+        </nav>
+
+    <main class="relative z-10 flex-1 flex flex-col items-center justify-center px-4 pb-20">
+        
+        <div class="text-center mb-12 animate-in">
+            <h2 class="text-blue-400 font-bold tracking-[0.2em] text-xs uppercase mb-3">DPÜ İnovasyon ve Liderlik Topluluğu</h2>
+            <h1 class="text-4xl md:text-6xl font-black text-white tracking-tight drop-shadow-2xl">
+                Etkinlik Seçimi
+            </h1>
+            <p class="text-slate-400 mt-4 max-w-lg mx-auto text-sm leading-relaxed">
+                Katılmak istediğiniz veya görüntülemek istediğiniz etkinliği aşağıdan seçiniz.
+            </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl w-full px-4 animate-in" style="animation-delay: 0.2s;">
+            
+            <a href="register.html" class="glass-card group relative rounded-3xl p-8 flex flex-col items-center text-center overflow-hidden">
+                <div class="absolute inset-0 bg-gradient-to-b from-blue-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                
+                <div class="w-20 h-20 rounded-2xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center mb-6 group-hover:scale-110 group-hover:bg-blue-500/20 transition-all duration-300 relative z-10 shadow-[0_0_30px_rgba(59,130,246,0.2)]">
+                    <i class="fa-solid fa-ticket text-3xl text-blue-400"></i>
+                </div>
+                
+                <h3 class="text-2xl font-bold text-white mb-2 relative z-10 group-hover:text-blue-200 transition-colors">Çekiliş Kayıt</h3>
+                <p class="text-sm text-slate-400 mb-6 relative z-10 leading-relaxed">
+                    Etkinlik çekilişine katılmak için kayıt formunu doldurun ve şansınızı deneyin.
+                </p>
+                
+                <div class="mt-auto relative z-10 flex items-center gap-2 text-xs font-bold text-blue-400 group-hover:text-blue-300 tracking-wider uppercase">
+                    Kayıt Ol <i class="fa-solid fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
+                </div>
+            </a>
+
+            <a href="tombola_view.html" class="glass-card group relative rounded-3xl p-8 flex flex-col items-center text-center overflow-hidden">
+                <div class="absolute inset-0 bg-gradient-to-b from-pink-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                
+                <div class="w-20 h-20 rounded-2xl bg-pink-500/10 border border-pink-500/20 flex items-center justify-center mb-6 group-hover:scale-110 group-hover:bg-pink-500/20 transition-all duration-300 relative z-10 shadow-[0_0_30px_rgba(236,72,153,0.2)]">
+                    <i class="fa-solid fa-table-cells text-3xl text-pink-400"></i>
+                </div>
+                
+                <h3 class="text-2xl font-bold text-white mb-2 relative z-10 group-hover:text-pink-200 transition-colors">Tombala</h3>
+                <p class="text-sm text-slate-400 mb-6 relative z-10 leading-relaxed">
+                    Canlı tombala heyecanına ortak olun. Çıkan numaraları ekrandan takip edin.
+                </p>
+                
+                <div class="mt-auto relative z-10 flex items-center gap-2 text-xs font-bold text-pink-400 group-hover:text-pink-300 tracking-wider uppercase">
+                    İzle <i class="fa-solid fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
+                </div>
+            </a>
+
+            <a href="vampire.html" class="glass-card group relative rounded-3xl p-8 flex flex-col items-center text-center overflow-hidden">
+                <div class="absolute inset-0 bg-gradient-to-b from-red-600/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                
+                <div class="w-20 h-20 rounded-2xl bg-red-600/10 border border-red-600/20 flex items-center justify-center mb-6 group-hover:scale-110 group-hover:bg-red-600/20 transition-all duration-300 relative z-10 shadow-[0_0_30px_rgba(220,38,38,0.2)]">
+                    <i class="fa-solid fa-ghost text-3xl text-red-500"></i>
+                </div>
+                
+                <h3 class="text-2xl font-bold text-white mb-2 relative z-10 group-hover:text-red-200 transition-colors">Vampir Köylü</h3>
+                <p class="text-sm text-slate-400 mb-6 relative z-10 leading-relaxed">
+                    Köyü koru ya da herkesi avla! İnteraktif rol yapma oyununa katıl.
+                </p>
+                
+                <div class="mt-auto relative z-10 flex items-center gap-2 text-xs font-bold text-red-500 group-hover:text-red-400 tracking-wider uppercase">
+                    Oyuna Gir <i class="fa-solid fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
+                </div>
+            </a>
+
+        </div>
+
+        <div class="absolute bottom-6 left-0 w-full text-center">
+            <p class="text-[10px] text-slate-600 font-bold tracking-[0.3em] uppercase opacity-50">
+                &copy; 2024 İnovel Medya ve Tasarım Ekibi
+            </p>
+        </div>
+
+    </main>
+
 </body>
 </html>
